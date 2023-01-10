@@ -1,6 +1,12 @@
+from pprint import pprint
+import re
 from typing import List, Dict
 import argparse
 from pathlib import Path
+from PIL import Image, ExifTags
+from pillow_heif import register_heif_opener
+
+register_heif_opener()
 
 
 def main():
@@ -27,7 +33,8 @@ def main():
         extensions = ["jpg", "png", "jpeg", "gif", "mp4", "webp", "heic", "raf"]
     extensions = list(map(str.lower, extensions)) + list(map(str.upper, extensions))
 
-    duplicates = list_duplicates(dirs, extensions)
+    duplicates = find_duplicate_names(dirs, extensions)
+    duplicates = add_exif_date(duplicates)
 
     if args.verbose:
         print_duplicates(duplicates)
@@ -58,20 +65,58 @@ def stats(duplicates):
     return max_dupes
 
 
-def list_duplicates(dirs: List[Path], extensions: List[str]):
+def find_duplicate_names(
+    dirs: List[Path], extensions: List[str]
+) -> Dict[str, List[Path]]:
     filenames = {}
     for dir in dirs:
         for ext in extensions:
             for path in dir.glob(f"**/*.{ext}"):
                 if not path.is_file():
                     continue
-                paths = filenames.get((path.name, path.stat().st_mtime_ns), [])
+
+                key = re.sub(r"\([0-9]\)", "", path.name)
+
+                paths = filenames.get(key, [])
                 paths.append(path)
-                filenames[path.name] = paths
+                filenames[key] = paths
 
     return {
         name: sorted(paths, key=lambda x: x.stat().st_size)
         for name, paths in filenames.items()
+        if len(paths) > 1
+    }
+
+
+def add_exif_date(duplicates: Dict[str, List[Path]]):
+    new_duplicates = {}
+    for name, paths in duplicates.items():
+        for path in paths:
+            try:
+                img = Image.open(path)
+
+                # DateTimeOriginal
+                exif = img.getexif()
+
+                if exif is None:
+                    continue
+
+                # timestamp = exif.get(36867)
+                timestamp = exif.get(306)
+
+                if timestamp is None:
+                    continue
+
+                files = new_duplicates.get((name, timestamp), [])
+                files.append(path)
+                new_duplicates[(name, timestamp)] = files
+
+            except Exception:
+                print("Failed to read:", path)
+
+    return {
+        name: sorted(paths, key=lambda x: x.stat().st_size)
+        for name, paths in new_duplicates.items()
         if len(paths) > 1
     }
 
