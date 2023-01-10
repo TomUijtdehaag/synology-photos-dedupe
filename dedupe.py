@@ -1,10 +1,11 @@
-from pprint import pprint
-import re
-from typing import List, Dict
 import argparse
+import re
 from pathlib import Path
-from PIL import Image, ExifTags
+from typing import Dict, List
+
+from PIL import Image
 from pillow_heif import register_heif_opener
+from tqdm import tqdm
 
 register_heif_opener()
 
@@ -90,7 +91,7 @@ def find_duplicate_names(
 
 def add_exif_date(duplicates: Dict[str, List[Path]]):
     new_duplicates = {}
-    for name, paths in duplicates.items():
+    for name, paths in tqdm(duplicates.items()):
         for path in paths:
             try:
                 img = Image.open(path)
