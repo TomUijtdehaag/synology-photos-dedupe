@@ -14,8 +14,7 @@ def generate_dummy_data(dir: str, n_files=1000, n_dirs=2):
         d.mkdir()
 
     for n in range(n_files):
-
-        for d in dirs[1:]:
+        for d in dirs:
             if random.randint(0, 1):
                 c = "A" * random.randint(100, 1000)
                 (d / f"{n}.txt").write_text(c)

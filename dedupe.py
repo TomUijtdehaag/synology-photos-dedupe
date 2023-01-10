@@ -6,20 +6,28 @@ from pathlib import Path
 def main():
     parser = argparse.ArgumentParser(prog="Synology Photos Dedupe")
 
-    parser.add_argument("dir")  # positional argument
-    parser.add_argument("dest")
+    parser.add_argument("--dirs", nargs="+", required=True)
+    parser.add_argument("--dest", required=True)
+    parser.add_argument("-e", "--ext", nargs="+")
     parser.add_argument("-d", "--dry-run", action="store_true")
     parser.add_argument("-v", "--verbose", action="store_true")
 
     args = parser.parse_args()
 
-    # source dir
-    dir = Path(args.dir)
+    # source dirs
+    dirs = [Path(d) for d in args.dirs]
 
     # destination dir
     dest = Path(args.dest)
 
-    duplicates = list_duplicates(dir)
+    # extensions
+    if args.ext:
+        extensions = args.ext
+    else:
+        extensions = ["jpg", "png", "jpeg", "gif", "mp4", "webp", "heic", "raf"]
+    extensions = list(map(str.lower, extensions)) + list(map(str.upper, extensions))
+
+    duplicates = list_duplicates(dirs, extensions)
 
     if args.verbose:
         print_duplicates(duplicates)
@@ -50,14 +58,16 @@ def stats(duplicates):
     return max_dupes
 
 
-def list_duplicates(dir: Path):
+def list_duplicates(dirs: List[Path], extensions: List[str]):
     filenames = {}
-    for path in dir.glob("**/*"):
-        if not path.is_file():
-            continue
-        paths = filenames.get(path.name, [])
-        paths.append(path)
-        filenames[path.name] = paths
+    for dir in dirs:
+        for ext in extensions:
+            for path in dir.glob(f"**/*.{ext}"):
+                if not path.is_file():
+                    continue
+                paths = filenames.get(path.name, [])
+                paths.append(path)
+                filenames[path.name] = paths
 
     return {
         name: sorted(paths, key=lambda x: x.stat().st_size)
