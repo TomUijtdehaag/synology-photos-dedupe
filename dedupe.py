@@ -24,14 +24,17 @@ def main():
     if args.verbose:
         print_duplicates(duplicates)
 
-    print_stats(duplicates)
+    max_dupes = stats(duplicates)
 
-    if not args.dry_run:
+    if not args.dry_run and input("Continue? y/[n]: ") == "y":
         dest.mkdir(exist_ok=True)
-        move_duplicates(duplicates, dest)
+        move_duplicates(duplicates, dest, max_dupes)
+
+    else:
+        print("No files moved.")
 
 
-def print_stats(duplicates):
+def stats(duplicates):
     total_dupes = 0
     max_dupes = 0
     for files in duplicates.values():
@@ -43,6 +46,8 @@ def print_stats(duplicates):
     print(
         f"Found dupes of {len(duplicates)} files. Total: {total_dupes}. Max: {max_dupes}"
     )
+
+    return max_dupes
 
 
 def list_duplicates(dir: Path):
@@ -69,11 +74,19 @@ def print_duplicates(duplicates: dict[str, list[Path]]):
             print(f"{p.stat().st_size:>15} {str(p)}")
 
 
-def move_duplicates(duplicates: dict[str, list[Path]], dest: Path):
-    for name, paths in duplicates.items():
+def move_duplicates(duplicates: dict[str, list[Path]], dest: Path, max_dupes: int):
 
-        for path in paths[:-1]:
-            path.rename(dest / name)
+    for i in range(max_dupes - 1):
+        (dest / str(i)).mkdir()
+
+    move_count = 0
+    for paths in duplicates.values():
+
+        for i, path in enumerate(paths[:-1]):
+            path.rename(dest / str(i) / path.name)
+            move_count += 1
+
+    print(f"Moved {move_count} files to {dest}.")
 
 
 if __name__ == "__main__":
