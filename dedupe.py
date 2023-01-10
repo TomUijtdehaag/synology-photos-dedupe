@@ -24,9 +24,25 @@ def main():
     if args.verbose:
         print_duplicates(duplicates)
 
+    print_stats(duplicates)
+
     if not args.dry_run:
         dest.mkdir(exist_ok=True)
         move_duplicates(duplicates, dest)
+
+
+def print_stats(duplicates):
+    total_dupes = 0
+    max_dupes = 0
+    for files in duplicates.values():
+        total_dupes += len(files)
+
+        if len(files) > max_dupes:
+            max_dupes = len(files)
+
+    print(
+        f"Found dupes of {len(duplicates)} files. Total: {total_dupes}. Max: {max_dupes}"
+    )
 
 
 def list_duplicates(dir: Path):
@@ -46,13 +62,9 @@ def list_duplicates(dir: Path):
 
 
 def print_duplicates(duplicates: dict[str, list[Path]]):
-    if len(duplicates) == 0:
-        print("No duplicates found")
-        return
+    for paths in duplicates.values():
 
-    for name, paths in duplicates.items():
-        print()
-        print(f"{'size':>15} path")
+        print(f"\n{'size':>15} path")
         for p in paths:
             print(f"{p.stat().st_size:>15} {str(p)}")
 
