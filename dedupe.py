@@ -65,7 +65,7 @@ def list_duplicates(dirs: List[Path], extensions: List[str]):
             for path in dir.glob(f"**/*.{ext}"):
                 if not path.is_file():
                     continue
-                paths = filenames.get(path.name, [])
+                paths = filenames.get((path.name, path.stat().st_mtime_ns), [])
                 paths.append(path)
                 filenames[path.name] = paths
 
