@@ -1,4 +1,4 @@
-import os
+from typing import List, Dict
 import argparse
 from pathlib import Path
 
@@ -66,7 +66,7 @@ def list_duplicates(dir: Path):
     }
 
 
-def print_duplicates(duplicates: dict[str, list[Path]]):
+def print_duplicates(duplicates: Dict[str, List[Path]]):
     for paths in duplicates.values():
 
         print(f"\n{'size':>15} path")
@@ -74,7 +74,7 @@ def print_duplicates(duplicates: dict[str, list[Path]]):
             print(f"{p.stat().st_size:>15} {str(p)}")
 
 
-def move_duplicates(duplicates: dict[str, list[Path]], dest: Path, max_dupes: int):
+def move_duplicates(duplicates: Dict[str, List[Path]], dest: Path, max_dupes: int):
 
     for i in range(max_dupes - 1):
         (dest / str(i)).mkdir()
