@@ -127,12 +127,14 @@ def add_exif_date(duplicates: Dict[str, List[Path]]):
 
 
 def print_duplicates(duplicates: Dict[str, List[Path]]):
-    print(f"\n{'size':>15} | path")
+    print("|" + "-" * 123 + "|")
+    print(f"|{'size':>15} | {'path':<105}|")
 
     for paths in duplicates.values():
-        print("-" * 80)
+        print("|" + "-" * 123 + "|")
         for p in paths:
-            print(f"{p.stat().st_size:>15} | {str(p)}")
+            print(f"|{p.stat().st_size:>15} | {str(p):<105}|")
+    print("|" + "-" * 123 + "|")
 
 
 def move_duplicates(duplicates: Dict[str, List[Path]], dest: Path, max_dupes: int):
