@@ -2,7 +2,7 @@ import argparse
 import re
 from pathlib import Path
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from PIL import Image
 from pillow_heif import register_heif_opener
@@ -14,12 +14,27 @@ register_heif_opener()
 def main():
     parser = argparse.ArgumentParser(prog="Synology Photos Dedupe")
 
-    parser.add_argument("--dirs", nargs="+", required=True)
-    parser.add_argument("--filters", nargs="+")
-    parser.add_argument("--dest", required=True)
-    parser.add_argument("-e", "--ext", nargs="+")
-    parser.add_argument("-d", "--dry-run", action="store_true")
-    parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument(
+        "--dirs", nargs="+", required=True, help="Directories to scan for duplicates"
+    )
+    parser.add_argument(
+        "--filters",
+        nargs="+",
+        help="Skip paths that contain these (sub-)folders or filenames",
+    )
+    parser.add_argument(
+        "--dest", required=True, help="Destination directory to move duplicates to"
+    )
+    parser.add_argument("-e", "--exts", nargs="+", help="File extensions to consider")
+    parser.add_argument(
+        "-d",
+        "--dry-run",
+        action="store_true",
+        help="Only scan and show duplicate files",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Print table of duplicate files"
+    )
 
     args = parser.parse_args()
 
@@ -39,7 +54,7 @@ def main():
     duplicates = find_duplicate_names(dirs, extensions, args.filters)
     duplicates = add_date(duplicates)
 
-    if args.verbose:
+    if args.verbose or args.dry_run:
         print_duplicates(duplicates)
 
     max_dupes = stats(duplicates)
@@ -94,7 +109,7 @@ def find_duplicate_names(
     }
 
 
-def add_date(duplicates: Dict[str, List[Path]]) -> Dict[(str, str), List[Path]]:
+def add_date(duplicates: Dict[str, List[Path]]) -> Dict[Tuple[str, str], List[Path]]:
     new_duplicates = {}
     for name, paths in tqdm(duplicates.items()):
         for path in paths:
@@ -145,7 +160,7 @@ def print_duplicates(duplicates: Dict[str, List[Path]]):
 
 
 def move_duplicates(
-    duplicates: Dict[(str, str), List[Path]], dest: Path, max_dupes: int
+    duplicates: Dict[Tuple[str, str], List[Path]], dest: Path, max_dupes: int
 ):
 
     for i in range(max_dupes - 1):
