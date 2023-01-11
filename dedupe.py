@@ -1,6 +1,7 @@
 import argparse
 import re
 from pathlib import Path
+import time
 from typing import Dict, List
 
 from PIL import Image
@@ -109,11 +110,14 @@ def add_exif_date(duplicates: Dict[str, List[Path]]):
                 # timestamp = exif.get(36867)
                 timestamp = exif.get(306)
 
-                if timestamp is None:
-                    continue
+                if timestamp:
+                    # use only date
+                    timestamp = timestamp.split()[0]
 
-                # use only date
-                timestamp = timestamp.split()[0]
+                # fallback to file date
+                else:
+                    timestamp = time.localtime(path.stat().st_mtime)
+                    timestamp = time.strftime("%Y:%m:%d")
 
                 files = new_duplicates.get((name, timestamp), [])
                 files.append(path)
