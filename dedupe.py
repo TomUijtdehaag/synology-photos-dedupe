@@ -37,7 +37,7 @@ def main():
     extensions = list(map(str.lower, extensions)) + list(map(str.upper, extensions))
 
     duplicates = find_duplicate_names(dirs, extensions, args.filters)
-    duplicates = add_exif_date(duplicates)
+    duplicates = add_date(duplicates)
 
     if args.verbose:
         print_duplicates(duplicates)
@@ -94,7 +94,7 @@ def find_duplicate_names(
     }
 
 
-def add_exif_date(duplicates: Dict[str, List[Path]]):
+def add_date(duplicates: Dict[str, List[Path]]) -> Dict[(str, str), List[Path]]:
     new_duplicates = {}
     for name, paths in tqdm(duplicates.items()):
         for path in paths:
@@ -144,7 +144,9 @@ def print_duplicates(duplicates: Dict[str, List[Path]]):
     print("|" + "-" * 123 + "|")
 
 
-def move_duplicates(duplicates: Dict[str, List[Path]], dest: Path, max_dupes: int):
+def move_duplicates(
+    duplicates: Dict[(str, str), List[Path]], dest: Path, max_dupes: int
+):
 
     for i in range(max_dupes - 1):
         (dest / str(i)).mkdir()
