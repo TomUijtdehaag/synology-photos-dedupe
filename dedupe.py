@@ -77,7 +77,7 @@ def find_duplicate_names(
                 if not path.is_file():
                     continue
 
-                if filters and any([f in path.parts for f in filters]):
+                if filters is not None and any([f in path.parts for f in filters]):
                     continue
 
                 key = re.sub(r"\([0-9]\)", "", path.name)
