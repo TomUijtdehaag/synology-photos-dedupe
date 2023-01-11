@@ -112,6 +112,9 @@ def add_exif_date(duplicates: Dict[str, List[Path]]):
                 if timestamp is None:
                     continue
 
+                # use only date
+                timestamp = timestamp.split()[0]
+
                 files = new_duplicates.get((name, timestamp), [])
                 files.append(path)
                 new_duplicates[(name, timestamp)] = files
