@@ -14,6 +14,7 @@ def main():
     parser = argparse.ArgumentParser(prog="Synology Photos Dedupe")
 
     parser.add_argument("--dirs", nargs="+", required=True)
+    parser.add_argument("--filters", nargs="+")
     parser.add_argument("--dest", required=True)
     parser.add_argument("-e", "--ext", nargs="+")
     parser.add_argument("-d", "--dry-run", action="store_true")
@@ -34,7 +35,7 @@ def main():
         extensions = ["jpg", "png", "jpeg", "gif", "mp4", "webp", "heic", "raf"]
     extensions = list(map(str.lower, extensions)) + list(map(str.upper, extensions))
 
-    duplicates = find_duplicate_names(dirs, extensions)
+    duplicates = find_duplicate_names(dirs, extensions, args.filters)
     duplicates = add_exif_date(duplicates)
 
     if args.verbose:
@@ -67,13 +68,16 @@ def stats(duplicates):
 
 
 def find_duplicate_names(
-    dirs: List[Path], extensions: List[str]
+    dirs: List[Path], extensions: List[str], filters: List[str]
 ) -> Dict[str, List[Path]]:
     filenames = {}
     for dir in dirs:
         for ext in extensions:
             for path in dir.glob(f"**/*.{ext}"):
                 if not path.is_file():
+                    continue
+
+                if any([f in path.parts for f in filters]):
                     continue
 
                 key = re.sub(r"\([0-9]\)", "", path.name)
