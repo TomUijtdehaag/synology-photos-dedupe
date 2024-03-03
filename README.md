@@ -8,7 +8,7 @@ pip install -r requirements.txt
 ```
 # Example usage
 ```sh
-python dedupe.py --dirs "Photos/Google Photos" "Photos/MobileBackup" --dest dupes --filters @eaDir --ext jpg png gif mp4 -v 
+python dedupe.py --dirs "Photos/Google Photos" "Photos/MobileBackup" --dest dupes --filters @eaDir --exts jpg png gif mp4 -v 
 ```
 
 For all arguments see:
