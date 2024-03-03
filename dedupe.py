@@ -25,7 +25,7 @@ def main():
     parser.add_argument(
         "--dest", required=True, help="Destination directory to move duplicates to"
     )
-    parser.add_argument("-e", "--exts", nargs="+", help="File extensions to consider")
+    parser.add_argument("-e", "--ext", nargs="+", help="File extensions to consider")
     parser.add_argument(
         "-d",
         "--dry-run",
