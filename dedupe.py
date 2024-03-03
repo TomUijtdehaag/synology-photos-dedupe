@@ -45,8 +45,8 @@ def main():
     dest = Path(args.dest)
 
     # extensions
-    if args.ext:
-        extensions = args.ext
+    if args.exts:
+        extensions = args.exts
     else:
         extensions = ["jpg", "png", "jpeg", "gif", "mp4", "webp", "heic", "raf"]
     extensions = list(map(str.lower, extensions)) + list(map(str.upper, extensions))
